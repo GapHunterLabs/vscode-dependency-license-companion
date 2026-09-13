@@ -2,7 +2,7 @@
   "name": "dependency-license-companion",
   "displayName": "Dependency License Companion",
   "description": "Reads each node_modules dependency's SPDX license locally and flags copyleft/missing licenses against an allowlist -- no data leaves your editor.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "GapHunterLabs",
   "icon": "images/icon.png",
   "license": "Apache-2.0",
