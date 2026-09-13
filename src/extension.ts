@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { classifyDependency, DependencyLicenseResult } from './licenseClassifier';
+import { recordHit } from './reviewPrompt';
 
 let diagnostics: vscode.DiagnosticCollection;
 
@@ -37,7 +38,7 @@ function lineOfDependency(packageJsonText: string, name: string): number {
   return index === -1 ? 0 : index;
 }
 
-async function refreshWorkspace(): Promise<void> {
+async function refreshWorkspace(context: vscode.ExtensionContext): Promise<void> {
   diagnostics.clear();
 
   const folders = vscode.workspace.workspaceFolders;
@@ -85,6 +86,7 @@ async function refreshWorkspace(): Promise<void> {
     );
     diagnostic.source = 'Dependency License Companion';
     diagnostic.code = result.category;
+    recordHit(context, `${packageJsonUri.toString()}:${line}`);
     return diagnostic;
   });
 
@@ -95,17 +97,17 @@ export function activate(context: vscode.ExtensionContext): void {
   diagnostics = vscode.languages.createDiagnosticCollection('dependencyLicenseCompanion');
   context.subscriptions.push(diagnostics);
 
-  void refreshWorkspace();
+  void refreshWorkspace(context);
 
   const watcher = vscode.workspace.createFileSystemWatcher('**/package.json');
   context.subscriptions.push(
     watcher,
-    watcher.onDidChange(() => void refreshWorkspace()),
-    watcher.onDidCreate(() => void refreshWorkspace()),
+    watcher.onDidChange(() => void refreshWorkspace(context)),
+    watcher.onDidCreate(() => void refreshWorkspace(context)),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('dependencyLicenseCompanion.rescan', () => void refreshWorkspace()),
+    vscode.commands.registerCommand('dependencyLicenseCompanion.rescan', () => void refreshWorkspace(context)),
   );
 }
 
